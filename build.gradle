@@ -1,0 +1,25 @@
+plugins {
+    id 'java'
+    id 'idea'
+}
+
+group 'tutu'
+version '8.0.1946'
+
+sourceCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+
+    // https://mvnrepository.com/artifact/com.eclipsesource.minimal-json/minimal-json
+    compile group: 'com.eclipsesource.minimal-json', name: 'minimal-json', version: '0.9.5'
+
+    // https://mvnrepository.com/artifact/com.squareup.okhttp3/okhttp
+    compile group: 'com.squareup.okhttp3', name: 'okhttp', version: '4.2.2'
+
+    // https://mvnrepository.com/artifact/org.testng/testng
+    testCompile group: 'org.testng', name: 'testng', version: '7.0.0-beta7'
+}
