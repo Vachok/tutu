@@ -1,7 +1,12 @@
 package ru.vachok.tutu.conf;
 
 
-public interface BackEngine {
+import java.util.Date;
+import java.util.List;
+
+
+@FunctionalInterface public interface BackEngine {
     
+    List<Date> getComingTrains();
     
 }

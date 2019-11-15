@@ -12,7 +12,23 @@ repositories {
     mavenCentral()
 }
 
+sourceSets {
+    main {
+        resources {
+            srcDirs = ["src/main/java", "src/main/resources"]
+            includes = ["**/*.css","**/*.cfg", "**/*.properties", "**/*.png", "**/*.html", "**/*.sql", "**/*.jar", "**/*.txt","**/*.puml", "application.properties", "**/*.js", "msqldata.properties"]
+        }
+    }
+    test {
+        resources {
+            srcDirs = ["src/test/java", "src/test/resources"]
+            includes = ["**/*.css","**/*.cfg", "**/*.properties", "**/*.png", "**/*.jar", "**/*.txt", "**/*.jpg", "**/*.sql", "**/*.csv"]
+        }
+    }
+}
+
 dependencies {
+    compile fileTree ('\\lib')
 
     // https://mvnrepository.com/artifact/com.eclipsesource.minimal-json/minimal-json
     compile group: 'com.eclipsesource.minimal-json', name: 'minimal-json', version: '0.9.5'
@@ -22,4 +38,16 @@ dependencies {
 
     // https://mvnrepository.com/artifact/org.testng/testng
     testCompile group: 'org.testng', name: 'testng', version: '7.0.0-beta7'
+}
+
+jar {
+    baseName = project.name
+    version = project.version
+    manifest {
+        attributes(
+                'Main-Class': 'ru.vachok.tutu.StartMe',
+                'Class-Path': configurations.runtime.collect() { 'lib/' + it.name }.join('')
+        )
+    }
+    from configurations.compile.collect() { it.isDirectory() ? it : zipTree(it) }
 }

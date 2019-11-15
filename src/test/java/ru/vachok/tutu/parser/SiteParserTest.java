@@ -11,10 +11,13 @@ import okhttp3.Response;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Ignore;
 import org.testng.annotations.Test;
 import ru.vachok.tutu.conf.AbstractForms;
+import ru.vachok.tutu.conf.BackEngine;
 import ru.vachok.tutu.conf.TestConfigure;
 import ru.vachok.tutu.conf.TestConfigureThreadsLogMaker;
+import ru.vachok.tutu.excepthandlers.InvokeEmptyMethodException;
 
 import java.io.IOException;
 import java.text.ParseException;
@@ -22,10 +25,12 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 
-public class SiteParserTest {
+@SuppressWarnings("resource") public class SiteParserTest {
     
     
     private static final TestConfigure TEST_CONFIGURE_THREADS_LOG_MAKER = new TestConfigureThreadsLogMaker(SiteParser.class.getSimpleName(), System.nanoTime());
+    
+    private BackEngine siteParse = new SiteParser();
     
     @BeforeClass
     public void setUp() {
@@ -39,11 +44,27 @@ public class SiteParserTest {
     }
     
     @Test
+    @Ignore
     public void testGetDate(){
         Date fromIstra = siteConnect("https://www.tutu.ru/rasp.php?st1=37805&st2=37505");
         Date toIstra = siteConnect("https://www.tutu.ru/rasp.php?st1=37505&st2=37805");
         System.out.println("toIstra = " + toIstra);
         System.out.println("fromIstra = " + fromIstra);
+    }
+    
+    @Test
+    public void testGetComingTrains() {
+        List<Date> comingTrains = siteParse.getComingTrains();
+        for (Date train : comingTrains) {
+            Assert.assertTrue(train.after(new Date()));
+        }
+        System.out.println("comingTrains = " + AbstractForms.fromArray(comingTrains));
+    }
+    
+    @Test
+    public void testTestToString() {
+        String toString = siteParse.toString();
+        System.out.println("toString = " + toString);
     }
     
     private Date siteConnect(String url) {
@@ -52,6 +73,8 @@ public class SiteParserTest {
         Date retDate;
         Deque<Date> dates = new LinkedList<>();
         try(Response response = okHttpClient.newCall(request).execute()){
+            Assert.assertTrue(response.body() != null);
+            //noinspection resource
             String string = response.body().string();
             String jsonArrStr = string.split("\\Qwindow.modelParams = \\E")[1].split(";")[0];
             jsonArrStr=jsonArrStr.replace("]]","]");
