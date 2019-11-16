@@ -3,8 +3,10 @@ package ru.vachok.tutu.conf;
 
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Date;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Stream;
 
 
 @SuppressWarnings("All") public abstract class AbstractForms {
@@ -44,6 +46,24 @@ import java.util.List;
         for(Object o:trains){
             stringBuilder.append(o.toString()).append("\n");
         }
+        return stringBuilder.toString();
+    }
+    
+    @NotNull
+    public static String fromArray(@NotNull Stream<Map.Entry<?, ?>> limit) {
+        StringBuilder stringBuilder = new StringBuilder();
+        limit.forEach(entry->{
+            stringBuilder.append(entry.getKey()).append(" - ").append(entry.getValue()).append("\n");
+        });
+        return stringBuilder.toString();
+    }
+    
+    public static String fromArray(Map<?, ?> trains) {
+        StringBuilder stringBuilder = new StringBuilder();
+        Set<?> keys = trains.keySet();
+        keys.forEach(key->{
+            stringBuilder.append(key).append(" - ").append(trains.get(key)).append("\n");
+        });
         return stringBuilder.toString();
     }
 }

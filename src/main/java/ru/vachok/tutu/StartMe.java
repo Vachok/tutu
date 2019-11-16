@@ -1,8 +1,7 @@
 package ru.vachok.tutu;
 
 
-import ru.vachok.tutu.conf.AbstractForms;
-import ru.vachok.tutu.conf.BackEngine;
+import ru.vachok.tutu.conf.InformationFactory;
 import ru.vachok.tutu.conf.MessageToUser;
 import ru.vachok.tutu.parser.SiteParser;
 
@@ -13,8 +12,8 @@ public class StartMe {
     
     public static void main(String[] args) {
         Thread.currentThread().setName(StartMe.class.getSimpleName());
-        BackEngine backEngine = new SiteParser();
-        MessageToUser.getInstance().info(AbstractForms.fromArray(backEngine.getComingTrains()));
+        InformationFactory backEngine = new SiteParser();
+        MessageToUser.getInstance().info(backEngine.getInfo());
         Runtime.getRuntime().runFinalization();
         System.exit(0);
     }

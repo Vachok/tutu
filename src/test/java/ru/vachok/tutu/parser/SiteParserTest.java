@@ -9,15 +9,10 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Ignore;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import ru.vachok.tutu.conf.AbstractForms;
-import ru.vachok.tutu.conf.BackEngine;
 import ru.vachok.tutu.conf.TestConfigure;
 import ru.vachok.tutu.conf.TestConfigureThreadsLogMaker;
-import ru.vachok.tutu.excepthandlers.InvokeEmptyMethodException;
 
 import java.io.IOException;
 import java.text.ParseException;
@@ -30,7 +25,7 @@ import java.util.*;
     
     private static final TestConfigure TEST_CONFIGURE_THREADS_LOG_MAKER = new TestConfigureThreadsLogMaker(SiteParser.class.getSimpleName(), System.nanoTime());
     
-    private BackEngine siteParse = new SiteParser();
+    private SiteParser siteParse;
     
     @BeforeClass
     public void setUp() {
@@ -52,19 +47,36 @@ import java.util.*;
         System.out.println("fromIstra = " + fromIstra);
     }
     
+    @BeforeMethod
+    public void initSiteParser() {
+        this.siteParse = new SiteParser();
+    }
+    
     @Test
     public void testGetComingTrains() {
-        List<Date> comingTrains = siteParse.getComingTrains();
-        for (Date train : comingTrains) {
+        Map<Date, String> comingTrains = siteParse.getComingTrains();
+        for (Date train : comingTrains.keySet()) {
             Assert.assertTrue(train.after(new Date()));
         }
         System.out.println("comingTrains = " + AbstractForms.fromArray(comingTrains));
     }
     
     @Test
-    public void testTestToString() {
+    public void testToString() {
         String toString = siteParse.toString();
-        System.out.println("toString = " + toString);
+        Assert.assertTrue(toString.contains("SiteParser{messageToUser=LocalMessenger{"));
+    }
+    
+    @Test
+    public void testGetInfo() {
+        String info = siteParse.getInfo();
+        Assert.assertTrue(info.split(", ").length == 2);
+    }
+    
+    @Test
+    public void testGetInfoAbout() {
+        String infoAbout = siteParse.getInfoAbout(String.valueOf(4));
+        Assert.assertTrue(infoAbout.split(", ").length == 4);
     }
     
     private Date siteConnect(String url) {
