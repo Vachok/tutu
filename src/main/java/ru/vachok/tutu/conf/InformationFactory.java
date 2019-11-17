@@ -10,6 +10,6 @@ public interface InformationFactory {
     
     void setClassOption(Object classOption);
     
-    String getInfoAbout(String aboutWhat);
+    String getInfoAbout(Object aboutWhat);
     
 }

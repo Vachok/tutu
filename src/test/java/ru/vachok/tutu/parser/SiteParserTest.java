@@ -17,7 +17,10 @@ import ru.vachok.tutu.conf.TestConfigureThreadsLogMaker;
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.Date;
+import java.util.Deque;
+import java.util.LinkedList;
+import java.util.List;
 
 
 @SuppressWarnings("resource") public class SiteParserTest {
@@ -50,15 +53,6 @@ import java.util.*;
     @BeforeMethod
     public void initSiteParser() {
         this.siteParse = new SiteParser();
-    }
-    
-    @Test
-    public void testGetComingTrains() {
-        Map<Date, String> comingTrains = siteParse.getComingTrains();
-        for (Date train : comingTrains.keySet()) {
-            Assert.assertTrue(train.after(new Date()));
-        }
-        System.out.println("comingTrains = " + AbstractForms.fromArray(comingTrains));
     }
     
     @Test
@@ -114,5 +108,14 @@ import java.util.*;
         }
         retDate = dates.getFirst();
         return retDate;
+    }
+    
+    @Test
+    private void getStationsByCode() {
+        String infoDefault = siteParse.getInfo();
+        System.out.println("infoDefault = " + infoDefault);
+        this.siteParse = new SiteParser(38905, 37705);
+        String info = siteParse.getInfo();
+        Assert.assertFalse(infoDefault.equalsIgnoreCase(info));
     }
 }
