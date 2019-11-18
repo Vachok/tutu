@@ -2,9 +2,11 @@ package ru.vachok.tutu.logimpl;
 
 
 import ru.vachok.tutu.conf.MessageToUser;
-import ru.vachok.tutu.excepthandlers.TODOException;
 
+import java.io.IOException;
 import java.text.MessageFormat;
+import java.time.LocalTime;
+import java.util.logging.FileHandler;
 import java.util.logging.Logger;
 
 
@@ -21,9 +23,21 @@ public class LocalMessenger implements MessageToUser {
         this.headerMsg = headerMsg;
         this.titleMsg = titleMsg;
         this.bodyMsg = bodyMsg;
-        
+    
         Logger logger = Logger.getLogger(headerMsg);
-        logger.severe(MessageFormat.format("{0}: {1}", titleMsg, bodyMsg));
+        FileHandler fileHandler = null;
+        try {
+            fileHandler = new FileHandler(String.format("%s.%d", headerMsg, LocalTime.now().toSecondOfDay()).toLowerCase());
+            logger.addHandler(fileHandler);
+        
+        }
+        catch (IOException e) {
+            warn(LocalMessenger.class.getSimpleName(), e.getMessage(), " see line: 34 ***");
+        }
+        finally {
+            logger.severe(MessageFormat.format("{0}: {1}", titleMsg, bodyMsg));
+            logger.removeHandler(fileHandler);
+        }
     }
     
     @Override public void info(String bodyMsg) {
@@ -32,6 +46,23 @@ public class LocalMessenger implements MessageToUser {
         this.headerMsg = Thread.currentThread().getName();
         Logger logger = Logger.getLogger(headerMsg);
         logger.info(bodyMsg);
+    }
+    
+    @Override
+    public void error(String bodyMsg) {
+        this.headerMsg = "Error";
+        this.titleMsg = "";
+        this.bodyMsg = bodyMsg;
+        error(headerMsg, titleMsg, bodyMsg);
+    }
+    
+    @Override
+    public void warn(String headerMsg, String titleMsg, String bodyMsg) {
+        this.headerMsg = headerMsg;
+        this.titleMsg = titleMsg;
+        this.bodyMsg = bodyMsg;
+        Logger logger = Logger.getLogger(headerMsg);
+        logger.warning(MessageFormat.format("{0}: {1}", titleMsg, bodyMsg));
     }
     
     @Override public String toString() {

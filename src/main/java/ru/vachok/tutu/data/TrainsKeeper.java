@@ -14,11 +14,15 @@ import ru.vachok.tutu.conf.AbstractForms;
 import ru.vachok.tutu.conf.BackEngine;
 import ru.vachok.tutu.conf.MessageToUser;
 
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.text.MessageFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentSkipListMap;
+import java.util.prefs.BackingStoreException;
+import java.util.prefs.Preferences;
 
 
 /**
@@ -27,6 +31,8 @@ public class TrainsKeeper implements BackEngine {
     
     
     private static final Map<Date, String> todayMap = new ConcurrentSkipListMap<>();
+    
+    private static final String TRAINS = "trains";
     
     private MessageToUser messageToUser = MessageToUser.getInstance();
     
@@ -41,20 +47,30 @@ public class TrainsKeeper implements BackEngine {
     
     @Override
     public Map<Date, String> getComingTrains() {
-        if (todayMap.size() == 0) {
+        if (todayMap.size() <= 1) {
             fillToday();
         }
         else {
             Set<Map.Entry<Date, String>> entries = todayMap.entrySet();
             entries.stream().forEach(this::actualizeMap);
+            setProperty();
         }
         return todayMap;
     }
     
-    @Override
-    public String toString() {
-        return new StringJoiner(",\n", TrainsKeeper.class.getSimpleName() + "[\n", "\n]")
-                .toString();
+    private void setProperty() {
+        Properties properties = new Properties();
+        Preferences preferences = Preferences.userRoot();
+        properties.setProperty(TRAINS, String.valueOf(todayMap.size()));
+        try {
+            properties.store(new FileOutputStream(this.getClass().getSimpleName() + ".properties"), MessageFormat
+                    .format("From = {0}, to = {1}", stationCodeFrom, stationCodeTo));
+            preferences.putInt(TRAINS, todayMap.size());
+            preferences.sync();
+        }
+        catch (IOException | BackingStoreException e) {
+            messageToUser.error(AbstractForms.fromArray(e));
+        }
     }
     
     private Map<Date, String> getComingTrains0() {
@@ -86,20 +102,12 @@ public class TrainsKeeper implements BackEngine {
         todayMap.putAll(trains);
     }
     
-    private Deque<Date> getComingTrain(int stationCodeFrom, int stationCodeTo) {
-        String url = "https://www.tutu.ru/rasp.php?st1=" + stationCodeFrom + "&st2=" + stationCodeTo;
-        OkHttpClient okHttpClient = new OkHttpClient();
-        Request request = new Request.Builder().url(url).build();
-        Deque<Date> dateDeque = null;
-        try (Response response = okHttpClient.newCall(request).execute()) {
-            try (ResponseBody responseBody = response.body()) {
-                dateDeque = new ArrayDeque<>(parseResponseBody(responseBody));
-            }
-        }
-        catch (IOException | ParseException | RuntimeException e) {
-            messageToUser.error("SiteParser.siteConnect", e.getMessage(), AbstractForms.networkerTrace(e.getStackTrace()));
-        }
-        return dateDeque;
+    @Override
+    public String toString() {
+        return new StringJoiner(",\n", TrainsKeeper.class.getSimpleName() + "[\n", "\n]")
+                .add("stationCodeFrom = " + stationCodeFrom)
+                .add("stationCodeTo = " + stationCodeTo)
+                .toString();
     }
     
     private @NotNull Deque<Date> parseResponseBody(@NotNull ResponseBody responseBody) throws IOException, ParseException {
@@ -132,5 +140,19 @@ public class TrainsKeeper implements BackEngine {
         return parse.getTime();
     }
     
-    
+    private Deque<Date> getComingTrain(int stationCodeFrom, int stationCodeTo) {
+        String url = "https://www.tutu.ru/rasp.php?st1=" + stationCodeFrom + "&st2=" + stationCodeTo;
+        OkHttpClient okHttpClient = new OkHttpClient();
+        Request request = new Request.Builder().url(url).build();
+        Deque<Date> dateDeque = null;
+        try (Response response = okHttpClient.newCall(request).execute()) {
+            try (ResponseBody responseBody = response.body()) {
+                dateDeque = new ArrayDeque<>(parseResponseBody(Objects.requireNonNull(responseBody, MessageFormat.format("No response from {0}", url))));
+            }
+        }
+        catch (IOException | ParseException | RuntimeException e) {
+            messageToUser.warn(TrainsKeeper.class.getSimpleName(), e.getMessage(), " see line: 116 ***");
+        }
+        return dateDeque;
+    }
 }
