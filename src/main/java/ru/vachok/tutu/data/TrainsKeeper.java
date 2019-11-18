@@ -17,10 +17,8 @@ import ru.vachok.tutu.conf.MessageToUser;
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.LocalDate;
 import java.util.*;
 import java.util.concurrent.ConcurrentSkipListMap;
-import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -35,6 +33,29 @@ public class TrainsKeeper implements BackEngine {
     private int stationCodeFrom;
     
     private int stationCodeTo;
+    
+    public TrainsKeeper(int stationCodeFrom, int stationCodeTo) {
+        this.stationCodeFrom = stationCodeFrom;
+        this.stationCodeTo = stationCodeTo;
+    }
+    
+    @Override
+    public Map<Date, String> getComingTrains() {
+        if (todayMap.size() == 0) {
+            fillToday();
+        }
+        else {
+            Set<Map.Entry<Date, String>> entries = todayMap.entrySet();
+            entries.stream().forEach(this::actualizeMap);
+        }
+        return todayMap;
+    }
+    
+    @Override
+    public String toString() {
+        return new StringJoiner(",\n", TrainsKeeper.class.getSimpleName() + "[\n", "\n]")
+                .toString();
+    }
     
     private Map<Date, String> getComingTrains0() {
         Deque<Date> fromIstra = getComingTrain(stationCodeFrom, stationCodeTo);
@@ -52,45 +73,12 @@ public class TrainsKeeper implements BackEngine {
         return retMap;
     }
     
-    public TrainsKeeper(int stationCodeFrom, int stationCodeTo) {
-        this.stationCodeFrom = stationCodeFrom;
-        this.stationCodeTo = stationCodeTo;
-    }
-    
-    @Override
-    public Map<Date, String> getComingTrains() {
-        if (todayMap.size() == 0) {
-            fillToday();
-        }
-        else {
-            Set<Map.Entry<Date, String>> entries = todayMap.entrySet();
-            entries.stream().limit(1).forEach(this::resetMap);
-        }
-        return todayMap;
-    }
-    
-    @Override
-    public String toString() {
-        return new StringJoiner(",\n", TrainsKeeper.class.getSimpleName() + "[\n", "\n]")
-                .toString();
-    }
-    
-    private void resetMap(@NotNull Map.Entry<Date, String> entry) {
-        LocalDate today = LocalDate.now();
-        Date key = entry.getKey();
-        LocalDate keyDate = LocalDate.ofEpochDay(TimeUnit.MILLISECONDS.toDays(key.getTime()));
-        if (keyDate.atStartOfDay().isBefore(today.atStartOfDay())) {
-            fillToday();
-            System.out.println("mapAsStr = " + AbstractForms.fromArray(todayMap));
-        }
-        else {
-            todayMap.forEach((date, destination)->{
-                if (date.getTime() < System.currentTimeMillis()) {
-                    todayMap.remove(date);
-                }
-            });
-            System.out.println("mapAsStr = " + key);
-        }
+    private void actualizeMap(@NotNull Map.Entry<Date, String> entry) {
+        todayMap.forEach((date, destination)->{
+            if (date.getTime() < System.currentTimeMillis()) {
+                todayMap.remove(date);
+            }
+        });
     }
     
     private void fillToday() {

@@ -9,7 +9,7 @@ import ru.vachok.tutu.data.TrainsKeeper;
 import java.util.*;
 
 
-public class SiteParser implements InformationFactory {
+public class TrainInformer implements InformationFactory {
     
     
     private MessageToUser messageToUser = MessageToUser.getInstance();
@@ -20,12 +20,12 @@ public class SiteParser implements InformationFactory {
     
     private int stationCodeTo;
     
-    public SiteParser() {
+    public TrainInformer() {
         this.stationCodeFrom = 37805;
         this.stationCodeTo = 37505;
     }
     
-    public SiteParser(int stationCodeFrom, int stationCodeTo) {
+    public TrainInformer(int stationCodeFrom, int stationCodeTo) {
         this.stationCodeFrom = stationCodeFrom;
         this.stationCodeTo = stationCodeTo;
     }
@@ -43,7 +43,6 @@ public class SiteParser implements InformationFactory {
             String add = stringQueue.remove();
             strings[i] = add;
         }
-        
         return Arrays.toString(strings);
     }
     
@@ -53,15 +52,23 @@ public class SiteParser implements InformationFactory {
             this.numOfTrains = Integer.parseInt((String) aboutWhat);
         }
         catch (NumberFormatException | ClassCastException e) {
-            messageToUser.error(SiteParser.class.getSimpleName(), e.getMessage(), " see line: 57 ***");
+            messageToUser.error(TrainInformer.class.getSimpleName(), e.getMessage(), " see line: 57 ***");
             this.numOfTrains = 2;
         }
         return getInfo();
     }
     
-    @Override
+    @SuppressWarnings("ChainOfInstanceofChecks") @Override
     public void setClassOption(Object classOption) {
-        this.numOfTrains = (int) classOption;
+        if (classOption instanceof Integer) {
+            this.numOfTrains = (int) classOption;
+        }
+        if (classOption instanceof int[]) {
+            int[] stations = (int[]) classOption;
+            this.stationCodeFrom = stations[0];
+            this.stationCodeTo = stations[1];
+        }
+        
     }
     
     @Override public String toString() {

@@ -23,12 +23,12 @@ import java.util.LinkedList;
 import java.util.List;
 
 
-@SuppressWarnings("resource") public class SiteParserTest {
+@SuppressWarnings("resource") public class TrainInformerTest {
     
     
-    private static final TestConfigure TEST_CONFIGURE_THREADS_LOG_MAKER = new TestConfigureThreadsLogMaker(SiteParser.class.getSimpleName(), System.nanoTime());
+    private static final TestConfigure TEST_CONFIGURE_THREADS_LOG_MAKER = new TestConfigureThreadsLogMaker(TrainInformer.class.getSimpleName(), System.nanoTime());
     
-    private SiteParser siteParse;
+    private TrainInformer siteParse;
     
     @BeforeClass
     public void setUp() {
@@ -52,7 +52,7 @@ import java.util.List;
     
     @BeforeMethod
     public void initSiteParser() {
-        this.siteParse = new SiteParser();
+        this.siteParse = new TrainInformer();
     }
     
     @Test
@@ -114,7 +114,7 @@ import java.util.List;
     private void getStationsByCode() {
         String infoDefault = siteParse.getInfo();
         System.out.println("infoDefault = " + infoDefault);
-        this.siteParse = new SiteParser(38905, 37705);
+        this.siteParse = new TrainInformer(38905, 37705);
         String info = siteParse.getInfo();
         Assert.assertFalse(infoDefault.equalsIgnoreCase(info));
     }
