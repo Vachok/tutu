@@ -4,7 +4,7 @@ plugins {
 }
 
 group 'tutu'
-version '8.0.1947'
+version '8.0.1948'
 
 sourceCompatibility = 1.8
 

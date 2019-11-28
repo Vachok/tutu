@@ -76,7 +76,7 @@ public class TrainsKeeper implements BackEngine {
     private Map<Date, String> getComingTrains0() {
         Deque<Date> fromIstra = getComingTrain(stationCodeFrom, stationCodeTo);
         Deque<Date> toIstra = getComingTrain(stationCodeTo, stationCodeFrom);
-        
+        long millisDifference = 0;
         Map<Date, String> retMap = new TreeMap<>();
         while (!fromIstra.isEmpty()) {
             Date from = fromIstra.remove();
@@ -114,7 +114,13 @@ public class TrainsKeeper implements BackEngine {
         Deque<Date> retDeq = new LinkedList<>();
         String string = responseBody.string();
         responseBody.close();
-        String jsonArrStr = string.split("\\Qwindow.modelParams = \\E")[1].split(";")[0];
+        String jsonArrStr;
+        try {
+            jsonArrStr = string.split("\\Qwindow.modelParams = \\E")[1].split(";")[0];
+        }
+        catch (IndexOutOfBoundsException e) {
+            jsonArrStr = "Site does not response or response body illegal";
+        }
         jsonArrStr = jsonArrStr.replace("]]", "]");
         JsonArray jsonArray = Json.parse(jsonArrStr).asArray();
         List<JsonValue> values = jsonArray.values();
